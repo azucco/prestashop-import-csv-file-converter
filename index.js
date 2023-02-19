@@ -5,6 +5,7 @@ const string = require("string-sanitizer");
 const productsCsvPath = './csv/products_to.csv';
 const categoriesCsvPath = './csv/categories_to.csv';
 const skippedCsvPath = './csv/skipped_to.csv';
+const combinationsCsvPath = './csv/combinations_to.csv';
 
 let index = 1;
 let categoryIndex = 3;
@@ -68,6 +69,7 @@ const savedCategories = new Set();
 try {
     initProductsCsv();
     initCategoriesCsv();
+    initCombinationsCsv();
 
     const homeCategoriesKeys = ['01', '02', '03', '04', '05', '06', '07', '08', '09'];
 
@@ -122,6 +124,10 @@ function initProductsCsv() {
 function initCategoriesCsv() {
     const csv = 'Category ID;Active (0/1);Name *;Parent category;Root category (0/1);Description;Meta title;Meta keywords;Meta description;URL rewritten;Image URL';
     fs.writeFileSync(categoriesCsvPath, csv);
+}
+function initCombinationsCsv() {
+    const csv = 'Product ID*;Attribute (Name:Type:Position)*;Value (Value:Position)*;Default (0 = No, 1 = Yes)';
+    fs.writeFileSync(combinationsCsvPath, csv);
 }
 
   /**
@@ -198,7 +204,8 @@ function saveProduct (row, index) {
         fs.appendFileSync(productsCsvPath, `\n${cleanedCsvRow}`);
         console.log('Product saved:')
         console.info(productInfo);
-        return true;
+        return saveCombinations(row, index);
+
     } catch (e) {
         console.log('Error saving product:');
         console.info(productInfo);
@@ -210,5 +217,34 @@ function saveProduct (row, index) {
 function saveSkipped (row) {
     const csv = `\n${row};`;
     fs.appendFileSync(skippedCsvPath, csv);
+}
+
+function saveCombinations (row, index) {
+
+    const separator = '@';
+    const attributes = `Autore:autore:1${separator}Editore:editore:2${separator}Luogo pubblicazione:luogo-pubblicazione:3${separator}Data pubblicazione:data-pubblicazione:4${separator}Numero pagine:numero-pagine:5`;
+    const autore = getCombinationValue(row[5]);
+    const editore = getCombinationValue(row[9]);
+    const luogo = getCombinationValue(row[10]);
+    const data = getCombinationValue(row[11].replaceAll('.', ''));
+    const pagine = getCombinationValue(row[12]);
+    const csvRow = `${index};${attributes};${autore}${separator}${editore}${separator}${luogo}${separator}${data}${separator}${pagine};1`;
+    const cleanedCsvRow = csvRow.replace(/(\r\n|\n|\r)/gm, "");
+
+    try {
+        fs.appendFileSync(combinationsCsvPath, `\n${cleanedCsvRow}`);
+        console.log('Combiantion saved')
+        return true;
+    } catch (e) {
+        console.log('Error saving combinations');
+        console.info(e);
+        return false;
+    }
+
+}
+
+function getCombinationValue (value) {
+    const defaultValue = 'n.d.';
+    return `${value === '' ? defaultValue : value.substring(0, 128).replaceAll(':', ',')}:1`;
 }
 
