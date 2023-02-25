@@ -222,13 +222,31 @@ function saveSkipped (row) {
 function saveCombinations (row, index) {
 
     const separator = '@';
-    const attributes = `Autore:autore:1${separator}Editore:editore:2${separator}Luogo pubblicazione:luogo-pubblicazione:3${separator}Data pubblicazione:data-pubblicazione:4${separator}Numero pagine:numero-pagine:5`;
-    const autore = getCombinationValue(row[5]);
-    const editore = getCombinationValue(row[9]);
-    const luogo = getCombinationValue(row[10]);
-    const data = getCombinationValue(row[11].replaceAll('.', ''));
-    const pagine = getCombinationValue(row[12]);
-    const csvRow = `${index};${attributes};${autore}${separator}${editore}${separator}${luogo}${separator}${data}${separator}${pagine};1`;
+
+    const attributesValueMap = new Map ([
+        ['Autore', getCombinationValue(row[5])],
+        ['Editore', getCombinationValue(row[9])],
+        ['Luogo pubblicazione', getCombinationValue(row[10])],
+        ['Data pubblicazione', getCombinationValue(row[11].replaceAll('.', ''))],
+        ['Numero pagine', getCombinationValue(row[12])],
+        ['Numero edizione', getCombinationValue(row[13])],
+        ['Donazione di', getCombinationValue(row[14])],
+        ['Note', getCombinationValue(row[15])],
+        ['Ricerche', getCombinationValue(row[16])],
+        ['Tipologia', getCombinationValue(row[17])],
+    ])
+
+    const attributes = Array.from(attributesValueMap.keys()).reduce(
+        (accumulator, currentValue, currentIndex) => accumulator + `${currentValue}:${currentValue.toLowerCase().replaceAll(' ', '')}:${currentIndex}${separator}`,
+        ''
+    ).slice(0, -(separator.length));
+
+    const values = Array.from(attributesValueMap.values()).reduce(
+        (accumulator, currentValue) => accumulator + `${currentValue}${separator}`,
+        ''
+    ).slice(0, -(separator.length));
+
+    const csvRow = `${index};${attributes};${values};1`;
     const cleanedCsvRow = csvRow.replace(/(\r\n|\n|\r)/gm, "");
 
     try {
