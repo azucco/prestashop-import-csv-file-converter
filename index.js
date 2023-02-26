@@ -175,7 +175,9 @@ function saveCategory (referenceField, index) {
  * @return bool
  */
 function saveProduct (row, index) {
-    let reference = row[1].replaceAll('\\', '/').replaceAll('n.', '');
+    let reference = row[1]
+    .slice(0, -(row[1].length - row[1].indexOf(' ')))
+    .replaceAll('\\', '/').replaceAll('n.', '');
     const name = row[6].substring(0, 128);
     const author = row[5];
     const productInfo = {
@@ -192,9 +194,9 @@ function saveProduct (row, index) {
         const summary = row[7];
         const category = categoryMap.get(categoryKey);
         const quantity = 1;
-        const description = row[15] ?? '';
+        const description = row[16] ?? '';
         const meta = `${name}, ${author}`.substring(0, 255);
-        const url = string.sanitize(`${name}, ${author}`).substring(0, 128);
+        const url = string.sanitize(`${name}-${author}`).substring(0, 128);
         const showPrice = 0;
         const deleteExistingImages = 0;
     
@@ -232,7 +234,7 @@ function saveCombinations (row, index) {
         ['Numero edizione', getCombinationValue(row[13])],
         ['Donazione di', getCombinationValue(row[14])],
         ['Note', getCombinationValue(row[15])],
-        ['Ricerche', getCombinationValue(row[16])],
+        // ['Ricerche', getCombinationValue(row[16])],
         ['Tipologia', getCombinationValue(row[17])],
     ])
 
